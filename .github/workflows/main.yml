@@ -1,32 +1,39 @@
-name :- CICD JAVA Application
-on # multiple triggers when this workfow can run
-workfow_dispatch
-push:
-  branches:
-    - master
-job:
+name: CICD JAVA Application
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
   job1:
-     runs-on: ubuntu-latest
-     steps:
-     - name: clone the repo
-       uses: actions/checkout@v6
-     - name: install JAVA on runner
-       uses: actions/setup-java@v5
-       with:
-         distribution: 'temurin'
-         java-versions: '17'
-     - name: build java code
-       run: mvn clean package
-     - name: setup up docker
-       uses: docker/setup-docker-actions@v4
-     - name: login to docker hub
-       uses: docker-login-actions@v3
-       with:
-         username: ${{ secrets.DOCKERHUB_USERNAME }}
-         password: ${{  secrets.DOCKERHUB_TOKEN }}
-     - name: build and push
-       uses: docker/build-push-action@v6
-       with
-          context: # location where dockerfile is-dockerfile is in current directory              
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo
+        uses: actions/checkout@v4
+
+      - name: Install Java on runner
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build Java code
+        run: mvn clean package
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
           push: true
-          tags: omprakashjadhav87/myjavaapp
+          tags: omprakashjadhav87/myjavaapp:latest
